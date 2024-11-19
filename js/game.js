@@ -2,9 +2,9 @@ var game = {
   colorblind: (localStorage.colorblind && JSON.parse(localStorage.colorblind)) || 'false',
   language: window.location.hash.substring(1) || 'en',
   difficulty: 'easy',
-  level: parseInt(localStorage.level, 10) || 0,
-  answers: (localStorage.answers && JSON.parse(localStorage.answers)) || {},
-  solved: (localStorage.solved && JSON.parse(localStorage.solved)) || [],
+  level: 0,//parseInt(localStorage.level, 10) || 0,
+  answers:{}, //(localStorage.answers && JSON.parse(localStorage.answers)) || {},
+  solved:[],// (localStorage.solved && JSON.parse(localStorage.solved)) || [],
   user: localStorage.user || '',
   changed: false,
   clickedCode: null,
@@ -19,6 +19,7 @@ var game = {
     }
 
     game.translate();
+    $('#level-counter').show();
     $('#level-counter .total').text(levels.length);
     $('#editor').show();
     $('#share').hide();
@@ -234,11 +235,11 @@ var game = {
       game.loadLevel(levels[level]);
     });
 
-    $('#level-indicator').on('click', function() {
-      $('#settings .tooltip').hide();
-      $('#levelsWrapper').toggle();
-      $('#instructions .tooltip').remove();
-    });
+    // $('#level-indicator').on('click', function() {
+    //   $('#settings .tooltip').hide();
+    //   $('#levelsWrapper').toggle();
+    //   $('#instructions .tooltip').remove();
+    // });
 
     $('.arrow.left').on('click', function() {
       if ($(this).hasClass('disabled')) {
@@ -419,12 +420,7 @@ var game = {
     });
 
     if (correct) {
-      ga('send', {
-        hitType: 'event',
-        eventCategory: level.name,
-        eventAction: 'correct',
-        eventLabel: $('#code').val()
-      });
+   
 
       if ($.inArray(level.name, game.solved) === -1) {
         game.solved.push(level.name);
@@ -433,12 +429,7 @@ var game = {
       $('[data-level=' + game.level + ']').addClass('solved');
       $('#next').removeClass('disabled').addClass('animated animation');
     } else {
-      ga('send', {
-        hitType: 'event',
-        eventCategory: level.name,
-        eventAction: 'incorrect',
-        eventLabel: $('#code').val()
-      });
+    
 
       game.changed = true;
       $('#next').removeClass('animated animation').addClass('disabled');
@@ -545,6 +536,44 @@ var game = {
   }
 };
 
+
+// timer related code here 
+const timer = {
+  time: 0,
+  interval: null,
+  timerElement: document.getElementById('timer'),
+  start: function() { 
+    this.render(); // run it once to set the timer
+    this.interval = setInterval(() => {
+      this.time++;
+      this.render();
+    }, 1000);
+  },
+  stop: function() {
+    clearInterval(this.interval);
+  },
+  reset: function() {
+    this.time = 0;
+    this.render();
+  },
+  render: function() { 
+    const minutes = Math.floor(this.time / 60);
+    const seconds = this.time % 60;
+    this.timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }
+};
+
 $(document).ready(function() {
+  $('#level-counter').hide();
+  $('#editor').hide(); 
+});
+
+$("#start-game-button").click(function() {
+  $("#start-game").hide();
+  $('#level-counter').show();
+  $('#editor').show();
+
+  timer.start();
   game.start();
 });
+
